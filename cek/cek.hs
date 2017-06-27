@@ -74,18 +74,8 @@ step _ = Left "Syntax error"
 makeCEK :: Expr -> CEKState
 makeCEK e = (e, [] , [])
 
-cekMachine :: CEKState -> String
-cekMachine cek = cekToString cek ++ "\n" ++ rest
-  where
-    rest = case step cek of
-              Left s -> s ++ "\n"
-              Right cek2 -> cekMachine cek2
-
 interpret :: Expr -> IO ()
-interpret e = putStr (cekMachine (makeCEK e))
-
-interpret2 :: Expr -> IO ()
-interpret2 e = loop (makeCEK e)
+interpret e = loop (makeCEK e)
   where
     loop :: CEKState -> IO ()
     loop cek = do
