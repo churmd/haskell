@@ -14,5 +14,20 @@ module Board where
   type Coord = (Int, Int)
   data Board = Board {
       state :: GameState
+    , size :: Int
     , cells :: Map.Map Coord Cell
   } deriving (Show)
+
+  
+
+  render :: Board -> Float -> Float -> Picture
+  render (Board state size cells) width height =
+    pictures (map cellPic [(x,y) | x <- [0..size], y <- [0..size]])
+      where
+        cellWidth = width / (fromIntegral size)
+        cellHeight = height / (fromIntegral size)
+        cellPic :: Coord -> Picture
+        cellPic (x,y) = translate ((fromIntegral x) * cellWidth)
+                                  ((fromIntegral y) * cellHeight) $
+                        color white $
+                        rectangleSolid (cellWidth-1) (cellHeight-1)
