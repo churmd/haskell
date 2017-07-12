@@ -6,7 +6,7 @@ module Board where
   data CellType = Mine | Clear Int deriving (Show, Read)
   data Cell = Cell {
       revealed :: Bool
-    , stuff :: CellType
+    , cellType :: CellType
   } deriving (Show)
 
   -- represents the whole grid and game state
