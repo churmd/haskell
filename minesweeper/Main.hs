@@ -2,6 +2,7 @@ module Main where
   import Graphics.Gloss
   import qualified Data.Map as Map
   import Board
+  import System.Random
   {--
   main :: IO ()
   main = do
@@ -23,4 +24,12 @@ module Main where
       --}
 
   main :: IO()
-  main = display (InWindow "Minesweeper" (500, 500) (1,1)) black (Board.render (Board OnGoing 5 (Map.fromList [])) 500 500 )
+  main = do
+    g <- getStdGen
+    playGame g
+
+  playGame :: (RandomGen g) => g -> IO()
+  playGame g =
+    let b = Board.blankBoard 3 in
+    let bMines = Board.addMines b 2 g in
+    display (InWindow "Minesweeper" (500, 500) (1,1)) black (Board.render bMines 500 500)
