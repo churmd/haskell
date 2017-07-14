@@ -31,7 +31,7 @@ module Board where
      let ys = take numMines $ List.nub $ randomRs (0,size-1) g2 in
      let coords = zip xs ys in
      (placeMines b coords)
-     
+
 
   placeMines :: Board -> [Coord] -> Board
   placeMines b [] = b
@@ -58,8 +58,11 @@ module Board where
         incClearVals (Board st sz (Map.update f c cells)) cs
       _ -> incClearVals b cs
 
-  makeBoard :: Int -> Int -> Board
-  makeBoard size numMines = undefined
+  makeBoard :: (RandomGen g) => Int -> Int -> g -> Board
+  makeBoard size numMines gen =
+    let b = blankBoard size in
+    let bMines = addMines b numMines gen in
+    bMines
 
 
   render :: Board -> Float -> Float -> Picture
