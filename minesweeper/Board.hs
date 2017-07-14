@@ -31,12 +31,32 @@ module Board where
      let ys = take numMines $ List.nub $ randomRs (0,size-1) g2 in
      let coords = zip xs ys in
      (placeMines b coords)
+     
 
   placeMines :: Board -> [Coord] -> Board
   placeMines b [] = b
   placeMines (Board st sz cells) (c : cs) =
     let f (Cell tf _) = Just (Cell tf Mine) in
-    placeMines (Board st sz (Map.update f c cells)) cs
+    let tempBoard = (Board st sz (Map.update f c cells)) in
+    let newBoard = incClearVals tempBoard (surroundingCoords c sz) in
+    placeMines newBoard cs
+
+  surroundingCoords :: Coord -> Int -> [Coord]
+  surroundingCoords (x, y) size =
+    let allPoss = [(x-1,y),(x-1,y-1),(x-1,y+1),
+                   (x,y-1),(x,y+1),
+                   (x+1,y),(x+1,y-1),(x+1,y+1)] in
+    let test (x,y) = x >= 0 && x < size && y >= 0 && y < size in
+    filter test allPoss
+
+  incClearVals :: Board -> [Coord] -> Board
+  incClearVals b [] = b
+  incClearVals b@(Board st sz cells) (c : cs) =
+    case Map.lookup c cells of
+      Just (Cell tf (Clear n)) ->
+        let f (Cell ft (Clear n)) = Just (Cell tf (Clear (n+1))) in
+        incClearVals (Board st sz (Map.update f c cells)) cs
+      _ -> incClearVals b cs
 
   makeBoard :: Int -> Int -> Board
   makeBoard size numMines = undefined
