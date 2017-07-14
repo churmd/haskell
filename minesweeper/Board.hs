@@ -20,6 +20,9 @@ module Board where
     , cells :: Map.Map Coord Cell
   } deriving (Show)
 
+
+-- Start of making new board
+
   blankBoard :: Int -> Board
   blankBoard size = Board OnGoing size (Map.fromList
                 [((x,y), Cell False (Clear 0)) | x <- [0..(size-1)], y <- [0..(size-1)]])
@@ -49,6 +52,7 @@ module Board where
     let test (x,y) = x >= 0 && x < size && y >= 0 && y < size in
     filter test allPoss
 
+-- rewrite to make f in map.update do work not case of
   incClearVals :: Board -> [Coord] -> Board
   incClearVals b [] = b
   incClearVals b@(Board st sz cells) (c : cs) =
@@ -64,6 +68,23 @@ module Board where
     let bMines = addMines b numMines gen in
     bMines
 
+-- End of making new board
+
+-- Start of board interations
+
+  revealCell :: Board -> Coord -> Board
+  revealCell b@(Board st sz cells) c =
+    case Map.lookup c cells of
+      Just (Cell True _) -> b
+      Just (Cell _ Mine) -> revealAllMines b
+      Just (Cell _ (Clear n)) ->
+        let reveal (Cell _ val) = Just (Cell True val) in
+        Board st sz (Map.update reveal c cells)
+
+  revealAllMines :: Board -> Board
+  revealAllMines = undefined
+
+--End of board interactions
 
   render :: Board -> Float -> Float -> Picture
   render (Board state size cells) width height =
