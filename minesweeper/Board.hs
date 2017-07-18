@@ -86,7 +86,10 @@ module Board where
         Board state sz newCells
 
   revealAllMines :: Board -> Board
-  revealAllMines (Board st sz cells) = undefined
+  revealAllMines (Board st sz cells) =
+    let revealMine (Cell _ Mine) = Cell True Mine
+        revealMine c = c in
+    Board st sz (Map.map revealMine cells)
 
   hasWon :: Map.Map Coord Cell -> Bool
   hasWon cells =
