@@ -76,13 +76,24 @@ module Board where
   revealCell b@(Board st sz cells) c =
     case Map.lookup c cells of
       Just (Cell True _) -> b
-      Just (Cell _ Mine) -> revealAllMines b
+      Just (Cell _ Mine) ->
+        let lossBoard = Board Loss sz cells in
+        revealAllMines lossBoard
       Just (Cell _ (Clear n)) ->
         let reveal (Cell _ val) = Just (Cell True val) in
-        Board st sz (Map.update reveal c cells)
+        let newCells = Map.update reveal c cells in
+        let state = if (hasWon newCells) then Win else OnGoing in
+        Board state sz newCells
 
   revealAllMines :: Board -> Board
-  revealAllMines = undefined
+  revealAllMines (Board st sz cells) = undefined
+
+  hasWon :: Map.Map Coord Cell -> Bool
+  hasWon cells =
+    let f (Cell False (Clear n)) tf = False && tf
+        f (Cell True Mine) tf = False && tf
+        f _ tf = True && tf in
+    Map.fold f True cells
 
 --End of board interactions
 
