@@ -1,7 +1,7 @@
 module Main where
   import Graphics.Gloss
-  import qualified Data.Map as Map
   import Board
+  import Display
   import System.Random
   {--
   main :: IO ()
@@ -29,7 +29,8 @@ module Main where
     playGame g
 
   playGame :: (RandomGen g) => g -> IO()
-  playGame g =
-    let b = Board.makeBoard 3 2 g in
-    putStrLn $ show b
-  --  display (InWindow "Minesweeper" (500, 500) (1,1)) black (Board.render bMines 500 500)
+  playGame g = do
+    let b = Board.makeBoard 3 2 g
+    --putStrLn $ show b
+    rendered <- Display.render b
+    display (InWindow "Minesweeper" (truncate getWidth, truncate getHeight) (1,1)) white rendered
