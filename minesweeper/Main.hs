@@ -30,7 +30,7 @@ module Main where
 
   playGame :: (RandomGen g) => g -> IO()
   playGame g = do
-    let b = Board.makeBoard 3 2 g
+    let b = Board.makeBoard 4 2 g
     --putStrLn $ show b
     rendered <- Display.render b
     display (InWindow "Minesweeper" (truncate getWidth, truncate getHeight) (1,1)) white rendered
