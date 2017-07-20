@@ -13,18 +13,6 @@ module Display where
   render b@(Board st sz cells) =
     return (drawGrid b (getWidth-4) (getHeight-4))
 
-{--
-  drawGrid :: Board -> Float -> Float -> Picture
-  drawGrid (Board st sz cells) width height =
-    let cellWidth = width / (fromIntegral sz) in
-    let cellHeight = height / (fromIntegral sz) in
-    let hLines = [color black (line [(-(height/2),yVal), (height/2, yVal)]) | y <- [1..(fromIntegral sz :: Float) -1], let yVal = (y*cellHeight) - (height/2)]
-    in
-    let vLines = [color black (line [(xVal,-(width/2)), (xVal,(width/2))]) | x <- [1..(fromIntegral sz :: Float) -1], let xVal = (x*cellWidth) - (width/2)]
-    in
-    pictures (hLines ++ vLines)
---}
-
   cellColor :: Board -> Coord -> Color
   cellColor (Board sz st cells) c =
     case Map.lookup c cells of
@@ -54,7 +42,9 @@ module Display where
                       , translate (sqX + xOffset) (sqY + yOffset) $
                       color black $
                       rectangleWire cellWidth cellHeight
-                      , translate (sqX + xOffset) (sqY + yOffset) $
+                      , translate(-cellWidth/8) (-cellHeight/8) $ --center text
+                      translate (sqX + xOffset) (sqY + yOffset) $
+                      scale 0.5 0.5 $
                       color black $
                       text (cellText b (truncate x, truncate y))
                     ]
