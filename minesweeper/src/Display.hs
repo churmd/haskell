@@ -35,14 +35,16 @@ module Display where
     let yOffset = (-height/2) + (cellHeight/2) in
     let xOffset = (-width/2) + (cellWidth/2) in
     let squares = [ pictures
-                    [
+                    [ -- grid square
                       translate (sqX + xOffset) (sqY + yOffset) $
                       color (cellColor b (truncate x, truncate y)) $
                       rectangleSolid cellWidth cellHeight
-                      , translate (sqX + xOffset) (sqY + yOffset) $
+                      , -- square outline
+                      translate (sqX + xOffset) (sqY + yOffset) $
                       color black $
                       rectangleWire cellWidth cellHeight
-                      , translate(-cellWidth/8) (-cellHeight/8) $ --center text
+                      , -- text in square, first line centers the text
+                      translate(-cellWidth/8) (-cellHeight/8) $ 
                       translate (sqX + xOffset) (sqY + yOffset) $
                       scale 0.5 0.5 $
                       color black $
