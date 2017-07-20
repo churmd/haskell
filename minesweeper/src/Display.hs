@@ -2,12 +2,7 @@ module Display where
   import Graphics.Gloss
   import qualified Data.Map as Map
   import Board
-
-  getWidth :: Float
-  getWidth = 600
-
-  getHeight :: Float
-  getHeight = 600
+  import Globals
 
   render :: Board -> IO (Picture)
   render b@(Board st sz cells) =
@@ -44,7 +39,7 @@ module Display where
                       color black $
                       rectangleWire cellWidth cellHeight
                       , -- text in square, first line centers the text
-                      translate(-cellWidth/8) (-cellHeight/8) $ 
+                      translate(-cellWidth/8) (-cellHeight/8) $
                       translate (sqX + xOffset) (sqY + yOffset) $
                       scale 0.5 0.5 $
                       color black $

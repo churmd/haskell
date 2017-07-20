@@ -30,11 +30,18 @@ module Board where
   addMines :: (RandomGen g) => Board -> Int -> g -> Board
   addMines b@(Board _ size cells) numMines g =
      let (g1, g2) = split g in
-     let xs = take numMines $ List.nub $ randomRs (0,size-1) g1 in
-     let ys = take numMines $ List.nub $ randomRs (0,size-1) g2 in
-     let coords = zip xs ys in
+     let xs = (randomRs (0,size-1) g1) in
+     let ys = (randomRs (0,size-1) g2) in
+     let coords = getUniqueCoord numMines xs ys [] in
      (placeMines b coords)
 
+  getUniqueCoord :: Int -> [Int] -> [Int] -> [Coord] -> [Coord]
+  getUniqueCoord len [] ys acc = acc
+  getUniqueCoord len xs [] acc = acc
+  getUniqueCoord len (x : xs) (y : ys) acc
+   | List.length acc == len = acc
+   | List.elem (x,y) acc = getUniqueCoord len xs ys acc
+   | otherwise = getUniqueCoord len xs ys ((x,y) : acc)
 
   placeMines :: Board -> [Coord] -> Board
   placeMines b [] = b
@@ -99,15 +106,3 @@ module Board where
     Map.fold f True cells
 
 --End of board interactions
-
-  render :: Board -> Float -> Float -> Picture
-  render (Board state size cells) width height =
-    pictures (map cellPic [(x,y) | x <- [0..size], y <- [0..size]])
-      where
-        cellWidth = width / (fromIntegral size)
-        cellHeight = height / (fromIntegral size)
-        cellPic :: Coord -> Picture
-        cellPic (x,y) = translate ((fromIntegral x) * cellWidth)
-                                  ((fromIntegral y) * cellHeight) $
-                        color white $
-                        rectangleSolid (cellWidth-1) (cellHeight-1)

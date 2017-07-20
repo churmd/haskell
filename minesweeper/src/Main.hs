@@ -2,12 +2,13 @@ module Main where
   import Graphics.Gloss.Interface.IO.Game
   import Board
   import Display
+  import Globals
   import UserInput
   import System.Random
 
   main :: IO ()
   main = do
-    g <- getStdGen
+    g <- newStdGen
     playIO
       --window
       (InWindow "Minesweeper" (truncate getWidth, truncate getHeight) (1,1))
@@ -16,7 +17,7 @@ module Main where
       --fps
       10
       --initial world
-      (makeBoard 4 2 g)
+      (makeBoard getBoardSize getNumMines g)
       --world to picture
       Display.render
       --handle input events
