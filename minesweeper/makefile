@@ -4,9 +4,11 @@ HI_DIR = hi
 
 EXECUTABLE = minesweeper
 
+DEPS = $(wildcard $(SRC_DIR)/*.hs)
+
 all : minesweeper
 
-minesweeper :
+minesweeper : $(DEPS)
 	ghc $(SRC_DIR)/* -odir $(OBJ_DIR) -hidir $(HI_DIR) -o $(EXECUTABLE)
 
 .PHONEY : clean
