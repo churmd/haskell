@@ -20,7 +20,7 @@ module Display where
                   OnGoing -> "      "
                   Win -> "Winner"
                   Loss -> "Loser " in
-    let t = translate (0) ((getScreenHeight/2) - heightSpace + 5) $
+    let t = translate (-getScreenWidth/4) ((getScreenHeight/2) - heightSpace + 5) $
             scale 0.4 0.4 $
             text state in
     t
