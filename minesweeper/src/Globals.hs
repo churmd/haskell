@@ -7,7 +7,7 @@ module Globals where
   getHeight = 600
 
   getBoardSize :: Int
-  getBoardSize = 8
+  getBoardSize = 16
 
   getNumMines :: Int
-  getNumMines = 10
+  getNumMines = 16

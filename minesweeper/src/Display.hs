@@ -41,7 +41,7 @@ module Display where
                       , -- text in square, first line centers the text
                       translate(-cellWidth/8) (-cellHeight/8) $
                       translate (sqX + xOffset) (sqY + yOffset) $
-                      scale 0.5 0.5 $
+                      scale (2*(cellWidth/width)) (2*(cellHeight/height)) $
                       color black $
                       text (cellText b (truncate x, truncate y))
                     ]
