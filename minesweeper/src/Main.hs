@@ -17,7 +17,7 @@ module Main where
       --fps
       10
       --initial world
-      (makeBoard getBoardSize getNumMines g)
+      (makeBoard easyBoard easyMines g)
       --world to picture
       Display.render
       --handle input events

@@ -18,6 +18,15 @@ module UserInput where
   handler (EventKey (Char 'r') Up _ _) (Board st sz nm cells) = do
     g <- newStdGen
     return (makeBoard sz nm g)
+  handler (EventKey (Char 'e') Up _ _) b = do
+    g <- newStdGen
+    return (makeBoard easyBoard easyMines g)
+  handler (EventKey (Char 'm') Up _ _) b = do
+    g <- newStdGen
+    return (makeBoard medBoard medMines g)
+  handler (EventKey (Char 'h') Up _ _) b = do
+    g <- newStdGen
+    return (makeBoard hardBoard hardMines g)
   handler _ b = return b
 
   getBoardCoord :: (Float, Float) -> Float -> Float -> Board -> Coord

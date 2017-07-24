@@ -15,12 +15,6 @@ module Globals where
   getHeight :: Float
   getHeight = getScreenHeight - border
 
-  getBoardSize :: Int
-  getBoardSize = 4
-
-  getNumMines :: Int
-  getNumMines = 16
-
   easyBoard :: Int
   easyBoard = 8
 
@@ -36,5 +30,5 @@ module Globals where
   hardBoard :: Int
   hardBoard = 24
 
-  hardMines :: Int 
+  hardMines :: Int
   hardMines = 99
