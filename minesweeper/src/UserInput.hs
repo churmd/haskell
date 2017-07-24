@@ -11,8 +11,6 @@ module UserInput where
     return b
   handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b = do
     let c = getBoardCoord (x,y) (getWidth) (getHeight) b
-    putStrLn $ show (x,y)
-    putStrLn $ show c
     return (revealCell b c)
   handler (EventKey (Char 'r') Up _ _) b = do
     g <- newStdGen
