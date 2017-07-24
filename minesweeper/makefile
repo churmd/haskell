@@ -11,6 +11,9 @@ all : minesweeper
 minesweeper : $(DEPS)
 	ghc $(SRC_DIR)/* -odir $(OBJ_DIR) -hidir $(HI_DIR) -o $(EXECUTABLE)
 
+run : $(EXECUTABLE)
+	./$(EXECUTABLE)
+
 .PHONEY : clean
 
 clean :
