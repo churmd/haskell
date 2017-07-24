@@ -16,7 +16,7 @@ module Globals where
   getHeight = getScreenHeight - border
 
   getBoardSize :: Int
-  getBoardSize = 16
+  getBoardSize = 4
 
   getNumMines :: Int
   getNumMines = 16

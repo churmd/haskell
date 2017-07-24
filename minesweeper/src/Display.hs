@@ -8,20 +8,31 @@ module Display where
   render b@(Board st sz cells) =
     let w = getWidth in
     let h = getHeight in
-    let overlay = gameOver w h b in
+    let top = topText b in
+    let bottom = bottomText b in
     let grid = drawGrid b w h in
-    return (pictures [grid, overlay])
+    return (pictures [top, bottom, grid])
 
-  gameOver :: Float -> Float -> Board -> Picture
-  gameOver width height (Board OnGoing sz cells) = Blank
-  gameOver width height (Board Win sz cells) =
-    let box = color (withAlpha 0.5 green) $
-              rectangleSolid width (height/4) in
-    pictures [box, (text "Winner")]
-  gameOver width height (Board Loss sz cells) =
-    let box = color (withAlpha 0.5 red) $
-              rectangleSolid width (height/4) in
-    pictures [box, (text "Loser")]
+  topText :: Board -> Picture
+  topText (Board st sz cells) =
+    let heightSpace = (getScreenHeight - getHeight)/2 in
+    let state = case st of
+                  OnGoing -> "      "
+                  Win -> "Winner"
+                  Loss -> "Loser " in
+    let t = translate (0) ((getScreenHeight/2) - heightSpace + 5) $
+            scale 0.4 0.4 $
+            text state in
+    t
+
+  bottomText :: Board -> Picture
+  bottomText (Board st sz cells) =
+    let heightSpace = (getScreenHeight - getHeight)/2 in
+    let controls = "Reset - r    Difficultly: Easy - e  Meduim - m  Hard - h" in
+    let t = translate (-(getScreenWidth/2)) (-(getScreenHeight/2) + 10) $
+            scale 0.11 0.3 $
+            text controls in
+    t
 
   cellColor :: Board -> Coord -> Color
   cellColor (Board sz st cells) c =
