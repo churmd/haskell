@@ -1,10 +1,16 @@
 module Globals where
 
+  getScreenWidth :: Float
+  getScreenWidth = 600
+
+  getScreenHeight :: Float
+  getScreenHeight = 600
+
   getWidth :: Float
-  getWidth = 600
+  getWidth = getScreenWidth - 50
 
   getHeight :: Float
-  getHeight = 600
+  getHeight = getScreenHeight - 50 
 
   getBoardSize :: Int
   getBoardSize = 16

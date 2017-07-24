@@ -79,6 +79,10 @@ module Board where
 
 -- Start of board interations
 
+  cellInRange :: Board -> Coord -> Bool
+  cellInRange (Board st sz cells) c =
+    Map.member c cells  
+
   revealCell :: Board -> Coord -> Board
   revealCell b@(Board st sz cells) c =
     case Map.lookup c cells of

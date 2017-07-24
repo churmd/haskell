@@ -6,7 +6,22 @@ module Display where
 
   render :: Board -> IO (Picture)
   render b@(Board st sz cells) =
-    return (drawGrid b (getWidth-4) (getHeight-4))
+    let w = getWidth in
+    let h = getHeight in
+    let overlay = gameOver w h b in
+    let grid = drawGrid b w h in
+    return (pictures [grid, overlay])
+
+  gameOver :: Float -> Float -> Board -> Picture
+  gameOver width height (Board OnGoing sz cells) = Blank
+  gameOver width height (Board Win sz cells) =
+    let box = color (withAlpha 0.5 green) $
+              rectangleSolid width (height/4) in
+    pictures [box, (text "Winner")]
+  gameOver width height (Board Loss sz cells) =
+    let box = color (withAlpha 0.5 red) $
+              rectangleSolid width (height/4) in
+    pictures [box, (text "Loser")]
 
   cellColor :: Board -> Coord -> Color
   cellColor (Board sz st cells) c =

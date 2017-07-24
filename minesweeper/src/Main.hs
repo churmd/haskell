@@ -11,7 +11,7 @@ module Main where
     g <- newStdGen
     playIO
       --window
-      (InWindow "Minesweeper" (truncate getWidth, truncate getHeight) (1,1))
+      (InWindow "Minesweeper" (truncate getScreenWidth, truncate getScreenHeight) (1,1))
       --background colour
       white
       --fps
