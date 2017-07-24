@@ -3,40 +3,34 @@ module UserInput where
   import Board
   import Globals
   import System.Random
-  import Data.Time
 
   handler :: Event -> Board -> IO (Board)
-  handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b@(Board Win _ _ _ _) =
+  handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b@(Board Win _ _ _) =
     return b
-  handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b@(Board Loss _ _ _ _) =
+  handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b@(Board Loss _ _ _) =
     return b
   handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b = do
     let c = getBoardCoord (x,y) (getWidth) (getHeight) b
     if cellInRange b c then
-      let started = startGame b in
-      return (revealCell started c)
+      return (revealCell b c)
     else
       return b
-  handler (EventKey (Char 'r') Up _ _) (Board st sz nm t cells) = do
+  handler (EventKey (Char 'r') Up _ _) (Board st sz nm cells) = do
     g <- newStdGen
-    time <- getCurrentTime
-    return (makeBoard sz nm time g)
+    return (makeBoard sz nm g)
   handler (EventKey (Char 'e') Up _ _) b = do
     g <- newStdGen
-    time <- getCurrentTime
-    return (makeBoard easyBoard easyMines time g)
+    return (makeBoard easyBoard easyMines g)
   handler (EventKey (Char 'm') Up _ _) b = do
     g <- newStdGen
-    time <- getCurrentTime
-    return (makeBoard medBoard medMines time g)
+    return (makeBoard medBoard medMines g)
   handler (EventKey (Char 'h') Up _ _) b = do
     g <- newStdGen
-    time <- getCurrentTime
-    return (makeBoard hardBoard hardMines time g)
+    return (makeBoard hardBoard hardMines g)
   handler _ b = return b
 
   getBoardCoord :: (Float, Float) -> Float -> Float -> Board -> Coord
-  getBoardCoord (x,y) width height (Board st sz nm t cells) =
+  getBoardCoord (x,y) width height (Board st sz nm cells) =
     let cellWidth = width / (fromIntegral sz) in
     let cellHeight = height / (fromIntegral sz) in
     let yOffset = (height/2) in
