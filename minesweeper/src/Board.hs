@@ -64,7 +64,6 @@ module Board where
     let test (x,y) = x >= 0 && x < size && y >= 0 && y < size in
     filter test allPoss
 
--- rewrite to make f in map.update do work not case of
   incClearVals :: Board -> [Coord] -> Board
   incClearVals b [] = b
   incClearVals b@(Board st sz nm t cells) (c : cs) =
