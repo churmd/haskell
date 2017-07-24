@@ -5,10 +5,12 @@ module Main where
   import Globals
   import UserInput
   import System.Random
+  import Data.Time
 
   main :: IO ()
   main = do
     g <- newStdGen
+    time <- getCurrentTime
     playIO
       --window
       (InWindow "Minesweeper" (truncate getScreenWidth, truncate getScreenHeight) (1,1))
@@ -17,7 +19,7 @@ module Main where
       --fps
       10
       --initial world
-      (makeBoard easyBoard easyMines g)
+      (makeBoard easyBoard easyMines time g)
       --world to picture
       Display.render
       --handle input events
