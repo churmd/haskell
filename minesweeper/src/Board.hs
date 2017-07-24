@@ -61,15 +61,13 @@ module Board where
     let test (x,y) = x >= 0 && x < size && y >= 0 && y < size in
     filter test allPoss
 
--- rewrite to make f in map.update do work not case of
   incClearVals :: Board -> [Coord] -> Board
   incClearVals b [] = b
   incClearVals b@(Board st sz nm cells) (c : cs) =
-    case Map.lookup c cells of
-      Just (Cell tf (Clear n)) ->
-        let f (Cell ft (Clear n)) = Just (Cell tf (Clear (n+1))) in
-        incClearVals (Board st sz nm (Map.update f c cells)) cs
-      _ -> incClearVals b cs
+    let f (Cell tf (Clear n)) = Just (Cell tf (Clear (n+1)))
+        f c = Just c in
+    let newCells = Map.update f c cells in
+    incClearVals (Board st sz nm newCells) cs
 
   makeBoard :: (RandomGen g) => Int -> Int -> g -> Board
   makeBoard size numMines gen =
