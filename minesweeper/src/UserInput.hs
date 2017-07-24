@@ -5,9 +5,9 @@ module UserInput where
   import System.Random
 
   handler :: Event -> Board -> IO (Board)
-  handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b@(Board Win _ _) =
+  handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b@(Board Win _ _ _) =
     return b
-  handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b@(Board Loss _ _) =
+  handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b@(Board Loss _ _ _) =
     return b
   handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b = do
     let c = getBoardCoord (x,y) (getWidth) (getHeight) b
@@ -15,13 +15,13 @@ module UserInput where
       return (revealCell b c)
     else
       return b
-  handler (EventKey (Char 'r') Up _ _) b = do
+  handler (EventKey (Char 'r') Up _ _) (Board st sz nm cells) = do
     g <- newStdGen
-    return (makeBoard getBoardSize getNumMines g)
+    return (makeBoard sz nm g)
   handler _ b = return b
 
   getBoardCoord :: (Float, Float) -> Float -> Float -> Board -> Coord
-  getBoardCoord (x,y) width height (Board st sz cells) =
+  getBoardCoord (x,y) width height (Board st sz nm cells) =
     let cellWidth = width / (fromIntegral sz) in
     let cellHeight = height / (fromIntegral sz) in
     let yOffset = (height/2) in

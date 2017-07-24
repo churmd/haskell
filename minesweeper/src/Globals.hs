@@ -20,3 +20,21 @@ module Globals where
 
   getNumMines :: Int
   getNumMines = 16
+
+  easyBoard :: Int
+  easyBoard = 8
+
+  easyMines :: Int
+  easyMines = 10
+
+  medBoard :: Int
+  medBoard = 16
+
+  medMines :: Int
+  medMines = 40
+
+  hardBoard :: Int
+  hardBoard = 24
+
+  hardMines :: Int 
+  hardMines = 99
