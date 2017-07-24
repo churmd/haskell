@@ -3,32 +3,27 @@ module Display where
   import qualified Data.Map as Map
   import Board
   import Globals
-  import Data.Time
 
   render :: Board -> IO (Picture)
-  render b@(Board st sz nm t cells) = do
-    now <- getCurrentTime
-    let w = getWidth
-    let h = getHeight
-    let top = topText b now
-    let bottom = bottomText b
-    let grid = drawGrid b w h
+  render b@(Board st sz nm t cells) =
+    let w = getWidth in
+    let h = getHeight in
+    let top = topText b in
+    let bottom = bottomText b in
+    let grid = drawGrid b w h in
     return (pictures [top, bottom, grid])
 
-  topText :: Board -> UTCTime -> Picture
-  topText (Board st sz nm (True, start) cells) now =
+  topText :: Board -> Picture
+  topText (Board st sz nm t cells) =
     let heightSpace = (getScreenHeight - getHeight)/2 in
-    let diff = diffUTCTime now start in
-    let time = "Time: " ++ show diff in
     let state = case st of
                   OnGoing -> "      "
                   Win -> "Winner"
                   Loss -> "Loser " in
-    let t = translate (-getScreenWidth/4) ((getScreenHeight/2) - heightSpace + 5) $
+    let t = translate (0) ((getScreenHeight/2) - heightSpace + 5) $
             scale 0.4 0.4 $
-            text (state ++ time) in
+            text state in
     t
-  topText _ now = Blank
 
   bottomText :: Board -> Picture
   bottomText (Board st sz nm t cells) =
