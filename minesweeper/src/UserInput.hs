@@ -3,34 +3,44 @@ module UserInput where
   import Board
   import Globals
   import System.Random
+  import Data.Time
 
   handler :: Event -> Board -> IO (Board)
-  handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b@(Board Win _ _ _) =
+  handler (EventKey (MouseButton LeftButton) Up _ (x, y))
+          b@(Board Win _ _ _ _) =
     return b
-  handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b@(Board Loss _ _ _) =
+  handler (EventKey (MouseButton LeftButton) Up _ (x, y))
+          b@(Board Loss _ _ _ _) =
     return b
-  handler (EventKey (MouseButton LeftButton) Up _ (x, y)) b = do
+  handler (EventKey (MouseButton LeftButton) Up _ (x, y))
+          b@(Board st sz nm cells (_, start, end)) = do
     let c = getBoardCoord (x,y) (getWidth) (getHeight) b
     if cellInRange b c then
-      return (revealCell b c)
+      let startedGame = (Board st sz nm cells (True, start, end)) in
+      let nextBoard = (revealCell startedGame c) in
+      return nextBoard
     else
       return b
-  handler (EventKey (Char 'r') Up _ _) (Board st sz nm cells) = do
+  handler (EventKey (Char 'r') Up _ _) (Board st sz nm cells t) = do
     g <- newStdGen
-    return (makeBoard sz nm g)
+    time <- getCurrentTime
+    return (makeBoard sz nm time g)
   handler (EventKey (Char 'e') Up _ _) b = do
     g <- newStdGen
-    return (makeBoard easyBoard easyMines g)
+    time <- getCurrentTime
+    return (makeBoard easyBoard easyMines time g)
   handler (EventKey (Char 'm') Up _ _) b = do
     g <- newStdGen
-    return (makeBoard medBoard medMines g)
+    time <- getCurrentTime
+    return (makeBoard medBoard medMines time g)
   handler (EventKey (Char 'h') Up _ _) b = do
     g <- newStdGen
-    return (makeBoard hardBoard hardMines g)
+    time <- getCurrentTime
+    return (makeBoard hardBoard hardMines time g)
   handler _ b = return b
 
   getBoardCoord :: (Float, Float) -> Float -> Float -> Board -> Coord
-  getBoardCoord (x,y) width height (Board st sz nm cells) =
+  getBoardCoord (x,y) width height (Board st sz nm cells t) =
     let cellWidth = width / (fromIntegral sz) in
     let cellHeight = height / (fromIntegral sz) in
     let yOffset = (height/2) in

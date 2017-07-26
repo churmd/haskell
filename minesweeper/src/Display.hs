@@ -3,9 +3,10 @@ module Display where
   import qualified Data.Map as Map
   import Board
   import Globals
+  import Data.Time
 
   render :: Board -> IO (Picture)
-  render b@(Board st sz nm cells) =
+  render b@(Board st sz nm cells t) =
     let w = getWidth in
     let h = getHeight in
     let top = topText b in
@@ -14,19 +15,23 @@ module Display where
     return (pictures [top, bottom, grid])
 
   topText :: Board -> Picture
-  topText (Board st sz nm cells) =
+  topText (Board st sz nm cells (_, start, end)) =
     let heightSpace = (getScreenHeight - getHeight)/2 in
+    {--
     let state = case st of
                   OnGoing -> "      "
                   Win -> "Winner"
                   Loss -> "Loser " in
+    --}
+    let time = diffUTCTime end start in
+    let info = show time in
     let t = translate (-getScreenWidth/4) ((getScreenHeight/2) - heightSpace + 5) $
             scale 0.4 0.4 $
-            text state in
+            text info in
     t
 
   bottomText :: Board -> Picture
-  bottomText (Board st sz nm cells) =
+  bottomText (Board st sz nm cells t) =
     let heightSpace = (getScreenHeight - getHeight)/2 in
     let controls = "Reset - r    Difficultly: Easy - e  Meduim - m  Hard - h" in
     let t = translate (-(getScreenWidth/2)) (-(getScreenHeight/2) + 10) $
@@ -35,14 +40,14 @@ module Display where
     t
 
   cellColor :: Board -> Coord -> Color
-  cellColor (Board sz st nm cells) c =
+  cellColor (Board sz st nm cells t) c =
     case Map.lookup c cells of
       Just (Cell False _) -> white
       Just (Cell True (Clear _)) -> greyN 0.5
       Just (Cell True Mine) -> red
 
   cellText :: Board -> Coord -> String
-  cellText (Board sz st nm cells) c =
+  cellText (Board sz st nm cells t) c =
     case Map.lookup c cells of
       Just (Cell False _) -> ""
       Just (Cell True (Clear n)) -> show n
@@ -50,7 +55,7 @@ module Display where
 
 -- uses bottom left of screen as (0,0) on board
   drawGrid :: Board -> Float -> Float -> Picture
-  drawGrid b@(Board st sz nm cells) width height =
+  drawGrid b@(Board st sz nm cells t) width height =
     let cellWidth = width / (fromIntegral sz) in
     let cellHeight = height / (fromIntegral sz) in
     let yOffset = (-height/2) + (cellHeight/2) in
