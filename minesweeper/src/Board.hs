@@ -97,8 +97,7 @@ module Board where
         let lossBoard = Board Loss sz nm cells (False, start, end) in
         revealAllMines lossBoard
       Just (Cell _ (Clear n)) ->
-        let reveal (Cell _ val) = Just (Cell True val) in
-        let newCells = Map.update reveal c cells in
+        let  (Board _ _ _ newCells _) = revealAllClear b [c] in
         let state = if (hasWon newCells) then Win else OnGoing in
         let timeKeeper = if state == Win then
                             (False, start, end)
@@ -118,5 +117,23 @@ module Board where
         f (Cell True Mine) tf = False && tf
         f _ tf = True && tf in
     Map.fold f True cells
+
+  revealAllClear :: Board -> [Coord] -> Board
+  revealAllClear b [] = b
+  revealAllClear b@(Board st sz nm cells timer) (c : cs) =
+    let f (Cell _ a) = Just (Cell True a) in
+    case Map.lookup c cells of
+      Just (Cell True _) -> revealAllClear b cs
+      Just (Cell _ Mine) -> revealAllClear b cs
+      Just (Cell _ (Clear 0)) ->
+        let updatedMap = Map.update f c cells in
+        let updatedBoard = Board st sz nm updatedMap timer in
+        let extraCoords = surroundingCoords c sz in
+        revealAllClear updatedBoard (extraCoords ++ cs)
+      Just (Cell _ (Clear n)) ->
+        let updatedMap = Map.update f c cells in
+        let updatedBoard = Board st sz nm updatedMap timer in
+        revealAllClear updatedBoard cs
+      Nothing -> revealAllClear b cs
 
 --End of board interactions

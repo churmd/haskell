@@ -17,12 +17,6 @@ module Display where
   topText :: Board -> Picture
   topText (Board st sz nm cells (_, start, end)) =
     let heightSpace = (getScreenHeight - getHeight)/2 in
-    {--
-    let state = case st of
-                  OnGoing -> "      "
-                  Win -> "Winner"
-                  Loss -> "Loser " in
-    --}
     let time = diffUTCTime end start in
     let info = show time in
     let t = translate (-getScreenWidth/4) ((getScreenHeight/2) - heightSpace + 5) $
