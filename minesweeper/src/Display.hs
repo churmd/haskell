@@ -34,7 +34,8 @@ module Display where
     t
 
   cellColor :: Board -> Coord -> Color
-  cellColor (Board sz st nm cells t) c =
+  cellColor (Board Win _ _ _ _) _ = green
+  cellColor (Board st sz nm cells t) c =
     case Map.lookup c cells of
       Just (Cell False _) -> white
       Just (Cell True (Clear _)) -> greyN 0.5
