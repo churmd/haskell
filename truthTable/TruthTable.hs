@@ -55,11 +55,24 @@ evaluate :: ExprCombination -> Maybe Bool
 evaluate exprCom = substituteVars exprCom >>= \lExpr ->
                       return (eval lExpr)
 
+isValid :: [VarSolution] -> Bool
+isValid vs = and $ getBoolResults vs
+
+isSatisfied :: [VarSolution] -> Bool
+isSatisfied vs = or $ getBoolResults vs
+
+getBoolResults :: [VarSolution] -> [Bool]
+getBoolResults vs = map resultBool results
+  where
+    (_, results) = unzip vs
+
 tableString :: [VarSolution] -> String
 tableString [] = ""
 tableString varSolutions =
   nDashes totalLen ++ "\n" ++
-  printTitle uniqueVars (maxVarLen, maxBoolLen)
+  printTitle uniqueVars (maxVarLen, maxBoolLen) ++ "\n" ++
+  allRowsString ++
+  nDashes totalLen
   where
     (vts, mbs) = unzip varSolutions
     flattenVTS = concat vts
@@ -70,13 +83,19 @@ tableString varSolutions =
     maybeBoolStrings = map resultString mbs
     maxBoolLen = maximum $ map (\s -> length s) (maybeBoolStrings ++ ["Result"])
     totalLen = (maxVarLen * numVars) + numVars + maxBoolLen + 2
+    rows = map (\vs -> printSolutionRow vs (numVars, maxVarLen, maxBoolLen)) varSolutions
+    allRowsString = foldr (\x y -> x ++ "\n" ++ y) "" rows
+
+resultBool :: Maybe   Bool -> Bool
+resultBool (Just x) = x
+resultBool Nothing = False
 
 resultString :: Maybe Bool -> String
 resultString (Just x) = show x
 resultString Nothing = "NA"
 
 nDashes :: Int -> String
-nDashes n = take n $ repeat '-'
+nDashes n = take n $ repeat '='
 
 pad :: String -> Int -> String
 pad s n | length s < n = s ++ (take (n - length s) $ repeat ' ')
@@ -87,8 +106,37 @@ padAll [] _ = []
 padAll (s:ss) n = [(pad s n)] ++ padAll ss n
 
 printTitle :: [String] -> (Int, Int) -> String
-printTitle vars (varLen, resultLen) = allVars ++ paddedResult ++ "|"
+printTitle vars (varLen, resultLen) = title
   where
     paddedVars = padAll vars varLen
     paddedResult = pad "Result" resultLen
-    allVars = foldl (\acc s -> acc ++ s ++ "|") "|" paddedVars
+    title = printRow $ mappend paddedVars [paddedResult]
+
+printSolutionRow :: VarSolution -> (Int, Int, Int) -> String
+printSolutionRow (vt, result) (numVars, varLen, resultLen) = row
+  where
+    (names, values) = unzip vt
+    valueStrings =  map show $ take numVars values
+    paddedValues = padAll valueStrings varLen
+    paddedResult = pad (resultString result) resultLen
+    row = printRow $ mappend paddedValues [paddedResult]
+
+printRow :: [String] -> String
+printRow [] = "|"
+printRow (x:xs) = "|" ++ x ++ printRow xs
+
+truthTable :: PlaceHolderExpr -> IO ()
+truthTable phe = do
+  let solution = solve phe
+  let exprString = show phe
+  let table = tableString solution
+  let valid = isValid solution
+  let satisfied = isSatisfied solution
+  putStrLn ""
+  putStrLn exprString
+  putStrLn ""
+  putStrLn table
+  putStrLn ""
+  putStrLn $ "Valid: " ++ show valid
+  putStrLn $ "Satisfied: " ++ show satisfied
+  putStrLn ""
