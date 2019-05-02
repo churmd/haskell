@@ -1,16 +1,6 @@
 module Game where
-
-type Tile = (Int, Int)
-data Player = Black | White deriving (Show, Eq)
-data Step = Move | Fire Tile deriving (Show, Eq)
-
-data Board = Board {
-  width :: Int,
-  height :: Int,
-  blackPieces :: [Tile],
-  whitePieces :: [Tile],
-  fires :: [Tile]
-} deriving (Show)
+import Board
+import Pathing
 
 data GameState = GameState {
   player :: Player,
@@ -20,63 +10,30 @@ data GameState = GameState {
 
 data UpdateResult = Success | Fail String
 
-type PathFunction = Tile -> Int -> Int -> [Tile]
-
+validMoveTiles :: Board -> Tile -> [Tile]
+validMoveTiles b piece = concat $ allTrimmedPaths
+  where
+    allFullPaths = allPathsFromATile b piece
+    allTrimmedPaths = map (\ts -> pathUntilBlocked b ts) allFullPaths
 
 validFireTiles :: Board -> Tile -> [Tile]
-validFireTiles b@(Board w h _ _ _) piece = filter (\t -> emptySpace b t) allTiles
+validFireTiles b piece = filter (\t -> emptySpace b t) allTiles
   where
-    allTiles = concat $ map (\f -> f piece w h) allPathFunctions
+    allTiles = concat $ allPathsFromATile b piece
 
-allPathFunctions :: [PathFunction]
-allPathFunctions =
-  [upPath, downPath, leftPath, rightPath, rightUpPath,
-  rightDownPath, leftUpPath, leftDownPath]
+pathUntilBlocked :: Board -> [Tile] -> [Tile]
+pathUntilBlocked _ [] = []
+pathUntilBlocked b@(Board _ _ bp wp f) (t:ts)
+  | notBlocked = t:(pathUntilBlocked b ts)
+  | otherwise = []
+    where
+      blackPeice = elem t bp
+      whitePiece = elem t wp
+      fire = elem t wp
+      notBlocked = not $ blackPeice || whitePiece || fire
 
-upPath :: PathFunction
-upPath t w h = path t (\(x,y) -> (x,y+1)) (\(x,y) -> y==h)
-
-downPath :: PathFunction
-downPath t w h = path t (\(x,y) -> (x,y-1)) (\(x,y) -> y<0)
-
-rightPath :: PathFunction
-rightPath t w h = path t (\(x,y) -> (x+1,y)) (\(x,y) -> x==w)
-
-leftPath :: PathFunction
-leftPath t w h = path t (\(x,y) -> (x-1,y)) (\(x,y) -> x<0)
-
-rightUpPath :: PathFunction
-rightUpPath t w h = path t (\(x,y) -> (x+1,y+1)) (\(x,y) -> x==w || y==h)
-
-rightDownPath :: PathFunction
-rightDownPath t w h = path t (\(x,y) -> (x+1,y-1)) (\(x,y) -> x==w || y<0)
-
-leftDownPath :: PathFunction
-leftDownPath t w h = path t (\(x,y) -> (x-1,y-1)) (\(x,y) -> x<0 || y<0)
-
-leftUpPath :: PathFunction
-leftUpPath t w h = path t (\(x,y) -> (x-1,y+1)) (\(x,y) -> x<0 || y==h)
-
-path :: Tile -> (Tile -> Tile) -> (Tile -> Bool) -> [Tile]
-path t inc stop | not $ stop nextTile = nextTile:(path nextTile inc stop)
-                | otherwise = []
-                  where
-                    nextTile = inc t
-
-emptySpace :: Board -> Tile -> Bool
-emptySpace b@(Board _ _ bp wp f) c = notInBP && notInWP && notInF
-  where
-    notInBP = notElem c bp
-    notInWP = notElem c wp
-    notInF = notElem c f
-
-inBounds :: Board -> Tile -> Bool
-inBounds (Board w h _ _ _) (x, y) = xGreater && yGreater && xLess && yLess
-  where
-    xGreater = x >= 0
-    yGreater = y >= 0
-    xLess = x < w
-    yLess = y < h
+allPathsFromATile :: Board -> Tile -> [[Tile]]
+allPathsFromATile b@(Board w h _ _ _) t = map (\f -> f t w h) allPathFunctions
 
 basicGame :: GameState
 basicGame = GameState White Move b
