@@ -1,8 +1,6 @@
 module Board where
 
 type Tile = (Int, Int)
-data Player = Black | White deriving (Show, Eq)
-data Step = Move | Fire Tile deriving (Show, Eq)
 
 data Board = Board {
   width :: Int,
