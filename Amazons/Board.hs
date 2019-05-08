@@ -24,3 +24,16 @@ inBounds (Board w h _ _ _) (x, y) = xGreater && yGreater && xLess && yLess
     yGreater = y >= 0
     xLess = x < w
     yLess = y < h
+
+movePiece :: [Tile] -> Tile -> Tile -> [Tile]
+movePiece ts old new = new : (filter (/= old) ts)
+
+moveWhitePiece :: Board -> Tile -> Tile -> Board
+moveWhitePiece b old new = b {whitePieces = updatedWP}
+  where
+    updatedWP = movePiece (whitePieces b) old new
+
+moveBlackPiece :: Board -> Tile -> Tile -> Board
+moveBlackPiece b old new = b {blackPieces = updatedBP}
+  where
+    updatedBP = movePiece (blackPieces b) old new
