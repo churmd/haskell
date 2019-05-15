@@ -37,3 +37,8 @@ moveBlackPiece :: Board -> Tile -> Tile -> Board
 moveBlackPiece b old new = b {blackPieces = updatedBP}
   where
     updatedBP = movePiece (blackPieces b) old new
+
+addFire :: Board -> Tile -> Board
+addFire b t = b {fires = updatedFires}
+  where
+    updatedFires = t:(fires b)
