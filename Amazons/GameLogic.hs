@@ -1,6 +1,9 @@
 module GameLogic where
 import GameState
 import Board
+import System.IO
+import System.IO.Error
+import Control.Exception
 
 turnStart :: GameState -> IO()
 turnStart gs = do
@@ -9,7 +12,23 @@ turnStart gs = do
     Nothing -> turnMove gs
 
 turnMove :: GameState -> IO()
-turnMove gs = undefined
+turnMove gs = do
+  putStrLn $ (show (player gs)) ++ "\'s turn"
+  putStrLn "Enter the X value of the piece to move"
+  pxString <- getLine
+  putStrLn "Enter the Y value of the piece to move"
+  pyString <- getLine
+  putStrLn "Enter the X value of the tile to move to"
+  txString <- getLine
+  putStrLn "Enter the Y value of the tile to move to"
+  tyString <- getLine
+  let px = read pxString :: Int
+  let py = read pyString :: Int
+  let tx = read txString :: Int
+  let ty = read tyString :: Int
+  case movePieceTo gs (px,py) (tx,ty) of
+    Just gs -> putStrLn "Move successful"
+    Nothing -> putStrLn "Invalid move"
 
 checkForWinner :: (Monad m) => GameState -> m Player
 checkForWinner (GameState NewTurn p b) =
