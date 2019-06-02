@@ -8,7 +8,7 @@ data Board = Board {
   blackPieces :: [Tile],
   whitePieces :: [Tile],
   fires :: [Tile]
-} deriving (Show)
+}
 
 emptySpace :: Board -> Tile -> Bool
 emptySpace b@(Board _ _ bp wp f) c = notInBP && notInWP && notInF
@@ -42,3 +42,40 @@ addFire :: Board -> Tile -> Board
 addFire b t = b {fires = updatedFires}
   where
     updatedFires = t:(fires b)
+
+instance Show Board where
+  show b@(Board w h bp wp f) =
+    board ++ "\n" ++ bottomNums
+      where
+        lineNums = reverse [0..(h-1)]
+        lineList = map (\l -> showLine b l) lineNums
+        board = joinStrings lineList "\n"
+        bottomNums = bottomLabels w
+
+bottomLabels :: Int -> String
+bottomLabels width = " " ++ (joinStrings labels " ")
+  where
+    labels = [" " ++ (show x) ++ " " | x <- [0..(width-1)]]
+
+showLine :: Board -> Int  -> String
+showLine b@(Board w h bp wp f) l =
+  (show l) ++ line
+    where
+      coords = [(x,l) | x <- [0..(w-1)]]
+      tiles = map (\coord -> showCoord b coord) coords
+      line = joinStrings tiles " "
+
+
+showCoord :: Board -> Tile -> String
+showCoord (Board w h bp wp f) t
+  | isFire = "[F]"
+  | isWhite = "[W]"
+  | isBlack = "[B]"
+  | otherwise = "[ ]"
+    where
+      isFire = elem t f
+      isWhite = elem t wp
+      isBlack = elem t bp
+
+joinStrings :: [String] -> String -> String
+joinStrings strings sep = foldl (\acc next -> acc ++ sep ++ next) "" strings
