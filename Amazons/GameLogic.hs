@@ -5,15 +5,41 @@ import System.IO
 import System.IO.Error
 import Control.Exception
 
-turnStart :: GameState -> IO()
-turnStart gs = do
-  case checkForWinner gs of
-    Just p -> putStrLn $ (show p) ++ " wins!"
-    Nothing -> turnMove gs
+data Result = Result GameState String deriving (Show)
 
-turnMove :: GameState -> IO()
-turnMove gs = do
-  putStrLn $ (show (player gs)) ++ "\'s turn"
+playGame :: GameState -> IO()
+playGame gs@(GameState NewTurn _ _) = do
+  result <- turnWinnerCheck gs
+  endOnMessage result
+playGame gs@(GameState Move _ _) = do
+  result <- turnMove gs
+  continueOnMessage result
+playGame gs@(GameState (Fire _) _ _) = do
+  result <- turnFire gs
+  continueOnMessage result
+
+continueOnMessage :: Result -> IO()
+continueOnMessage (Result gs "") = playGame gs
+continueOnMessage (Result gs msg) = do
+  putStrLn msg
+  playGame gs
+
+endOnMessage :: Result -> IO()
+endOnMessage (Result gs "") = playGame gs
+endOnMessage (Result gs msg) = putStrLn msg
+
+turnWinnerCheck :: GameState -> IO (Result)
+turnWinnerCheck gs@(GameState NewTurn _ _) = do
+  winner <- checkForWinner gs
+  case winner of
+    Just p -> return (Result gs ((show p) ++ " wins!"))
+    Nothing -> return (Result (gs { step = Move }) "")
+
+turnMove :: GameState -> IO (Result)
+turnMove gs@(GameState Move p b) = do
+  putStrLn $ (show p) ++ "\'s turn"
+  putStrLn $ show b
+  putStrLn "Pick a piece and a tile to move it to"
   putStrLn "Enter the X value of the piece to move"
   pxString <- getLine
   putStrLn "Enter the Y value of the piece to move"
@@ -26,46 +52,71 @@ turnMove gs = do
   let py = read pyString :: Int
   let tx = read txString :: Int
   let ty = read tyString :: Int
-  case movePieceTo gs (px,py) (tx,ty) of
-    Just gs -> putStrLn "Move successful"
-    Nothing -> putStrLn "Invalid move"
+  result <- movePieceTo gs (px,py) (tx,ty)
+  return result
+turnMove _ = fail "Cannot move a move a piece at this stage"
 
-checkForWinner :: (Monad m) => GameState -> m Player
+turnFire :: GameState -> IO (Result)
+turnFire gs@(GameState (Fire piece) p b) = do
+  putStrLn $ show b
+  putStrLn $ "Choose a tile for piece " ++ (show piece) ++ " to fire an arrow at"
+  putStrLn "Enter the X value of the tile to fire at"
+  fxString <- getLine
+  putStrLn "Enter the Y value of the tile to fire at"
+  fyString <- getLine
+  let fx = read fxString :: Int
+  let fy = read fyString :: Int
+  result <- fireArrow gs (fx, fy)
+  return result
+turnFire _ = fail "Cannot fire an arrow at this stage"
+
+
+checkForWinner :: (Monad m) => GameState -> m (Maybe Player)
 checkForWinner (GameState NewTurn p b) =
   case allValidMovesForPlayer b p of
-    [] -> return (otherPlayer p)
-    _ -> fail "No one has won yet"
+    [] -> return $ Just (otherPlayer p)
+    _ -> return Nothing
 checkForWinner _ = fail "Cannot check for a winner during a players turn"
 
-movePieceTo :: (Monad m) => GameState -> Tile -> Tile -> m GameState
+movePieceTo :: (Monad m) => GameState -> Tile -> Tile -> m Result
 movePieceTo (GameState NewTurn _ _) peice tile =
   fail "Cannot move a piece before checking if anyone has won"
 movePieceTo (GameState (Fire _) _ _) piece tile =
   fail "Cannot move piece when firing"
-movePieceTo gs p t = movePieceToHelper gs p t
+movePieceTo gs p t =
+  case movePieceToHelper gs p t of
+    Right newGS -> return (Result (newGS { step = Fire t }) "")
+    Left msg -> return (Result gs msg)
 
 
-movePieceToHelper :: (Monad m) => GameState -> Tile -> Tile -> m GameState
+movePieceToHelper :: GameState -> Tile -> Tile -> Either String GameState
 movePieceToHelper gs p t
-  | pieceExists && moveExists = return $ updatePiece gs p t
-  | not pieceExists = fail ((show p) ++ " is not a piece you can move")
-  | not moveExists = fail ((show t) ++ " cannot be moved to")
-  | otherwise = fail ("Move " ++ (show p) ++ " to " ++ (show t) ++ " is not a valid move")
+  | pieceExists && moveExists = Right (updatePiece gs p t)
+  | not pieceExists = Left ((show p) ++ " is not a piece you can move")
+  | not moveExists = Left ((show t) ++ " cannot be moved to")
+  | otherwise = Left ("Move " ++ (show p) ++ " to " ++ (show t) ++ " is not a valid move")
     where
       pieces = getPlayersPieces gs
       availableTiles = validMoveTiles (board gs) p
       pieceExists = elem p pieces
       moveExists = elem t availableTiles
 
-fireArrow :: (Monad m) => GameState -> Tile -> m GameState
-fireArrow(GameState NewTurn _ _) _ =
+fireArrow :: (Monad m) => GameState -> Tile -> m Result
+fireArrow (GameState NewTurn _ _) _ =
   fail "Cannot fire an arrow at the start of a turn"
-fireArrow(GameState Move _ _) _ =
+fireArrow (GameState Move _ _) _ =
   fail "Cannot fire an arrow before moving"
-fireArrow(GameState (Fire piece) pl b) t
+fireArrow gs t =
+  case fireArrowHelper gs t of
+    Right newGS -> return (Result (newGS { step = NewTurn }) "")
+    Left msg -> return (Result gs msg)
+
+
+fireArrowHelper :: GameState -> Tile -> Either String GameState
+fireArrowHelper gs@(GameState (Fire piece) pl b) t
   | elem t validTargets =
-    return (GameState NewTurn (otherPlayer pl) (addFire b t))
+    Right (GameState NewTurn (otherPlayer pl) (addFire b t))
   | otherwise =
-    fail ("Cannot fire at tile " ++ (show t) ++ " with piece " ++ (show piece))
+    Left ("Cannot fire at tile " ++ (show t) ++ " with piece " ++ (show piece))
     where
       validTargets = validFireTiles b piece
