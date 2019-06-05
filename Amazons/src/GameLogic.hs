@@ -37,9 +37,11 @@ turnWinnerCheck gs@(GameState NewTurn _ _) = do
 
 turnMove :: GameState -> IO (Result)
 turnMove gs@(GameState Move p b) = do
+  putStrLn ""
   putStrLn $ (show p) ++ "\'s turn"
+  putStrLn ""
+  putStrLn "Move a piece"
   putStrLn $ show b
-  putStrLn "Pick a piece and a tile to move it to"
   putStrLn "Enter the X value of the piece to move"
   pxString <- getLine
   putStrLn "Enter the Y value of the piece to move"
@@ -58,8 +60,9 @@ turnMove _ = fail "Cannot move a move a piece at this stage"
 
 turnFire :: GameState -> IO (Result)
 turnFire gs@(GameState (Fire piece) p b) = do
+  putStrLn ""
+  putStrLn $ "Fire an arrow from " ++ (show piece)
   putStrLn $ show b
-  putStrLn $ "Choose a tile for piece " ++ (show piece) ++ " to fire an arrow at"
   putStrLn "Enter the X value of the tile to fire at"
   fxString <- getLine
   putStrLn "Enter the Y value of the tile to fire at"

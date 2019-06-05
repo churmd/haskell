@@ -78,4 +78,9 @@ showCoord (Board w h bp wp f) t
       isBlack = elem t bp
 
 joinStrings :: [String] -> String -> String
-joinStrings strings sep = foldl (\acc next -> acc ++ sep ++ next) "" strings
+joinStrings [] _ = ""
+joinStrings [x] _ = x
+joinStrings (x:y:zs) sep = x ++ sep ++ (joinStrings (y:zs) sep)
+
+testBoard :: Board
+testBoard = Board 4 4 [(0,0), (3,1)] [(1,3), (3,3)] [(0,3),(2,3),(0,2),(2,2),(3,2),(0,1),(1,1),(2,1),(1,0),(2,0),(3,0)]
