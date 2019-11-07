@@ -50,9 +50,13 @@ collatzSequenceTillRepeat n
                     \positive integer greater than zero"
   | otherwise = sequenceTillRepeatHelper n []
 
+-- A map strucure to hold multiple sequences to prevent re-calculating
+-- existing parts of sequences.
+-- Each key in the cMap will be the current number in the sequence n.
+-- The key will then have a child which is the next number in the sequence, if it is known
 type Value = Integer
 type Child = Maybe Value
-type CollatzGraph = Map.Map Value Child
+type CollatzMap = Map.Map Value Child
 
 -- Updates the child of a value. Child will always be the same unless it has not
 -- been set.
@@ -60,59 +64,59 @@ updateChild :: Child -> Child -> Child
 updateChild Nothing c2 = c2
 updateChild c1 _ = c1
 
--- Add a node to the graph with its child value. Updates the child if the
+-- Add a node to the cMap with its child value. Updates the child if the
 -- node already exists.
-addNode :: Value -> Child -> CollatzGraph -> CollatzGraph
-addNode v c g = Map.insertWith updateChild v c g
+addNode :: Value -> Child -> CollatzMap -> CollatzMap
+addNode v c cMap = Map.insertWith updateChild v c cMap
 
--- Adds a collatz sequence to the given graph
-addSequence :: [Value] -> CollatzGraph -> CollatzGraph
-addSequence [] g = g
-addSequence (x : []) g = addNode x Nothing g
-addSequence (x : y : zs) g
-  | Map.member y g = addChildYToX
+-- Adds a collatz sequence to the given cMap
+addSequence :: [Value] -> CollatzMap -> CollatzMap
+addSequence [] cMap = cMap
+addSequence (x : []) cMap = addNode x Nothing cMap
+addSequence (x : y : zs) cMap
+  | Map.member y cMap = addChildYToX
   | otherwise = addSequence (y : zs) makeNodeYAfterX
     where
-      addChildYToX = addNode x (Just y) g
+      addChildYToX = addNode x (Just y) cMap
       makeNodeYAfterX = addNode y Nothing addChildYToX
 
--- Retrives the collatz seqeunce starting with v from the graph if the sequence
+-- Retrives the collatz seqeunce starting with v from the cMap if the sequence
 -- is present
-retrieveSeq :: Value -> CollatzGraph -> Maybe [Value]
-retrieveSeq 1 graph = Just [1]
-retrieveSeq v graph = do
-  mChild <- Map.lookup v graph
+retrieveSeq :: Value -> CollatzMap -> Maybe [Value]
+retrieveSeq 1 cMap = Just [1]
+retrieveSeq v cMap = do
+  mChild <- Map.lookup v cMap
   child <- mChild
-  tailSeq <- retrieveSeq child graph
+  tailSeq <- retrieveSeq child cMap
   return (v : tailSeq)
 
--- Creates an initial collatz graph with the node for the sequence {1,4,2}
-baseCycle :: CollatzGraph
+-- Creates an initial collatz cMap with the node for the sequence {1,4,2}
+baseCycle :: CollatzMap
 baseCycle = addSequence (collatzSequenceTillRepeat 1) (Map.singleton 1 Nothing)
 
--- Creates an initial collatz graph with the node for value 1 and no children
-baseNoCycle :: CollatzGraph
+-- Creates an initial collatz cMap with the node for value 1 and no children
+baseNoCycle :: CollatzMap
 baseNoCycle = Map.singleton 1 Nothing
 
--- Adds the collatz seqeunces initialised by 1 to n to the given graph
-firstNCollatzSeqHelper :: Value -> Value -> CollatzGraph -> CollatzGraph
-firstNCollatzSeqHelper current n graph
-  | current > n = graph
-  | otherwise = firstNCollatzSeqHelper (current + 1) n updatedGraph
+-- Adds the collatz seqeunces initialised by 1 to n to the given cMap
+firstNCollatzSeqHelper :: Value -> Value -> CollatzMap -> CollatzMap
+firstNCollatzSeqHelper current n cMap
+  | current > n = cMap
+  | otherwise = firstNCollatzSeqHelper (current + 1) n updatedcMap
     where
-      updatedGraph = addSequence currentSeq graph
+      updatedcMap = addSequence currentSeq cMap
       currentSeq = collatzSequenceTo1 current
 
--- Creates a graph of the collatz sequences initialised by the values 1 to n
-firstNCollatzSequences :: Value -> CollatzGraph
+-- Creates a cMap of the collatz sequences initialised by the values 1 to n
+firstNCollatzSequences :: Value -> CollatzMap
 firstNCollatzSequences n = firstNCollatzSeqHelper 1 n baseCycle
 
 -- Grpahs the first 1000 collatz sequences
-first1000CollatzSequences :: CollatzGraph
+first1000CollatzSequences :: CollatzMap
 first1000CollatzSequences = firstNCollatzSequences 1000
 
--- Returns the 800th collatz sequence if it is in the given graph
-collatz800FromGraph :: CollatzGraph -> Maybe [Value]
-collatz800FromGraph graph = do
-  seq800 <- retrieveSeq 800 graph
+-- Returns the 800th collatz sequence if it is in the given cMap
+collatz800FromCMap :: CollatzMap -> Maybe [Value]
+collatz800FromcMap cMap = do
+  seq800 <- retrieveSeq 800 cMap
   return seq800
