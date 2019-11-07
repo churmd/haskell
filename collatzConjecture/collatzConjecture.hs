@@ -1,6 +1,7 @@
 module Collatz where
 import qualified Data.Map as Map
 import qualified Data.Set as Set
+import qualified Data.Maybe as Maybe
 
 {--
 The Collatz conjecture is based around a sequence where you start with any
@@ -50,7 +51,7 @@ collatzSequenceTillRepeat n
   | otherwise = sequenceTillRepeatHelper n []
 
 type Value = Integer
-type Child = Maybe Integer
+type Child = Maybe Value
 type CollatzGraph = Map.Map Value Child
 
 -- Updates the child of a value. Child will always be the same unless it has not
@@ -64,6 +65,7 @@ updateChild c1 _ = c1
 addNode :: Value -> Child -> CollatzGraph -> CollatzGraph
 addNode v c g = Map.insertWith updateChild v c g
 
+-- Adds a collatz sequence to the given graph
 addSequence :: [Value] -> CollatzGraph -> CollatzGraph
 addSequence [] g = g
 addSequence (x : []) g = addNode x Nothing g
@@ -74,6 +76,43 @@ addSequence (x : y : zs) g
       addChildYToX = addNode x (Just y) g
       makeNodeYAfterX = addNode y Nothing addChildYToX
 
--- Creates an initial collatz graph with the node for value 1 and no children
+-- Retrives the collatz seqeunce starting with v from the graph if the sequence
+-- is present
+retrieveSeq :: Value -> CollatzGraph -> Maybe [Value]
+retrieveSeq 1 graph = Just [1]
+retrieveSeq v graph = do
+  mChild <- Map.lookup v graph
+  child <- mChild
+  tailSeq <- retrieveSeq child graph
+  return (v : tailSeq)
+
+-- Creates an initial collatz graph with the node for the sequence {1,4,2}
 baseCycle :: CollatzGraph
 baseCycle = addSequence (collatzSequenceTillRepeat 1) (Map.singleton 1 Nothing)
+
+-- Creates an initial collatz graph with the node for value 1 and no children
+baseNoCycle :: CollatzGraph
+baseNoCycle = Map.singleton 1 Nothing
+
+-- Adds the collatz seqeunces initialised by 1 to n to the given graph
+firstNCollatzSeqHelper :: Value -> Value -> CollatzGraph -> CollatzGraph
+firstNCollatzSeqHelper current n graph
+  | current > n = graph
+  | otherwise = firstNCollatzSeqHelper (current + 1) n updatedGraph
+    where
+      updatedGraph = addSequence currentSeq graph
+      currentSeq = collatzSequenceTo1 current
+
+-- Creates a graph of the collatz sequences initialised by the values 1 to n
+firstNCollatzSequences :: Value -> CollatzGraph
+firstNCollatzSequences n = firstNCollatzSeqHelper 1 n baseCycle
+
+-- Grpahs the first 1000 collatz sequences
+first1000CollatzSequences :: CollatzGraph
+first1000CollatzSequences = firstNCollatzSequences 1000
+
+-- Returns the 800th collatz sequence if it is in the given graph
+collatz800FromGraph :: CollatzGraph -> Maybe [Value]
+collatz800FromGraph graph = do
+  seq800 <- retrieveSeq 800 graph
+  return seq800
